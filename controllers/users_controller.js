@@ -1,10 +1,35 @@
 const user = require('../models/user');
 
-module.exports.profile = function(req, res){
-    return res.render('user_profile', {
-        title: 'User Profile'
+module.exports.profile = function(req, res) {
+  user.findOne({_id: req.params.id}).exec()
+    .then(function(user) {
+      return res.render('user_profile', {
+        title: 'User Profile',
+        profile_user: user
+      });
     })
-}
+    .catch(function(err) {
+      console.log("Error:", err);
+      return res.redirect('/');
+    });
+};
+
+
+module.exports.update = function(req, res) {
+  if(req.user.id === req.params.id) {
+    user.findByIdAndUpdate(req.params.id, req.body)
+    .then(function(user) {
+      return res.redirect('back');
+    })
+    .catch(function(err) {
+      console.error(err);
+      return res.status(500).send('Internal Server Error');
+    });
+  } else {
+    return res.status(401).send('Unauthorized');
+  }
+};
+
 
 module.exports.signUp = function(req,res){
     if(req.isAuthenticated()){
