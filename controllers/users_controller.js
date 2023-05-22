@@ -1,4 +1,7 @@
 const user = require('../models/user');
+const fs = require('fs');
+const path = require('path');
+
 
 module.exports.profile = function(req, res) {
   user.findOne({_id: req.params.id}).exec()
@@ -15,20 +18,41 @@ module.exports.profile = function(req, res) {
 };
 
 
-module.exports.update = function(req, res) {
-  if(req.user.id === req.params.id) {
-    user.findByIdAndUpdate(req.params.id, req.body)
-    .then(function(user) {
-      return res.redirect('back');
-    })
-    .catch(function(err) {
-      console.error(err);
-      return res.status(500).send('Internal Server Error');
-    });
-  } else {
-    return res.status(401).send('Unauthorized');
+module.exports.update = async function(req, res) {
+  try {
+    if(req.user.id === req.params.id) {
+      let updatedUser = await user.findByIdAndUpdate(req.params.id, req.body);
+      updatedUser.uploadedAvatar(req,res,function(err){
+        if(err){
+          console.log('******multer error' , err);
+        }
+
+        updatedUser.name = req.body.name;
+        updatedUser.email = req.body.email;
+
+        if(req.file){
+
+            if(updatedUser.avatar){
+              fs.unlinkSync(path.join(__dirname+'..'+ updatedUser.avatar));
+            }
+          updatedUser.avatar = user.avatarPath+'/'+req.file.filename;
+        }
+
+        updatedUser.save();
+        res.redirect('back');
+      });
+    } else {
+      return res.status(401).send('Unauthorized');
+    }
+  } catch (err) {
+    console.error(err);
+    return res.status(500).send('Internal Server Error');
   }
 };
+
+
+
+
 
 
 module.exports.signUp = function(req,res){

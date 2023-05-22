@@ -1,28 +1,39 @@
-const post = require('../models/post');
+const Post = require('../models/post');
 const comment = require('../models/comment');
 
 module.exports.create = async function(req, res) {
-  try {
-    if (!req.body.content) {
-      return res.status(400).send('Content is required');
+  try{
+    let post = await Post.create({
+        content: req.body.content,
+        user: req.user._id
+    });
+    
+    if (req.xhr){
+        // if we want to populate just the name of the user (we'll not want to send the password in the API), this is how we do it!
+        post = await post.populate('user', 'name');
+
+        return res.status(200).json({
+            data: {
+                post: post
+            },
+            message: "Post created!"
+        });
     }
 
-    const createdPost = await post.create({
-      content: req.body.content,
-      user: req.user._id
-    });
-
-    req.flash('success' , 'post created');
+    req.flash('success', 'Post published!');
     return res.redirect('back');
-  } catch(error) {
-    req.flash('error' , error);
-    return res.status(500).send('Internal server error');
-  }
+
+}catch(err){
+    req.flash('error', err);
+    // added this to view the error on console as well
+    console.log(err);
+    return res.redirect('back');
+}
 };
 
   
   module.exports.destroy = function(req, res) {
-    post.findById(req.params.id)
+    Post.findById(req.params.id)
       .then(post => {
         if (post.user == req.user.id) {
           return post.deleteOne();
@@ -35,6 +46,16 @@ module.exports.create = async function(req, res) {
         return comment.deleteMany({post: req.params.id});
       })
       .then(() => {
+
+        if(req.xhr){
+          return res.status(200).json({
+            data: {
+              post_id: req.params.id
+            },
+            message: "post deleted successfully"
+          })
+        }
+
         req.flash('success' , 'post and comments deleted');
         res.redirect('back');
       })
@@ -43,5 +64,4 @@ module.exports.create = async function(req, res) {
         res.status(500).send(err.message);
       });
   }
-  
   
