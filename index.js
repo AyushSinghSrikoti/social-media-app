@@ -8,6 +8,7 @@ const db = require('./config/mongoose');
 const session = require('express-session');
 const passport = require('passport');
 const passportLocal = require('./config/passport-local-strategy');
+const passportJWT = require('./config/passport-jwt-strategy');
 const MongoStore = require('connect-mongo');
 const dbUrl = 'mongodb://127.0.0.1:27017/bruhgram_development';
 const flash = require('connect-flash');
