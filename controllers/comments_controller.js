@@ -1,32 +1,8 @@
 const comment = require('../models/comment');
 const post = require('../models/post');
 const commentsMailer = require('../mailers/comments_mailer');
-
-
-// module.exports.create = function(req,res){
-//     post.findById(req.body.post)
-//         .then(function(post){
-//             if(post){
-//                 comment.create({
-//                     content: req.body.content,
-//                     post: req.body.post,
-//                     user: req.user._id
-//                 })
-//                 .then(function(comment){
-//                     post.comments.push(comment);
-//                     post.save();
-//                     commentsMailer.newComment(comment);
-//                     res.redirect('/');
-//                 })
-//                 .catch(function(err){
-//                     // handle error
-//                 });
-//             }
-//         })
-//         .catch(function(err){
-//             // handle error
-//         });
-// }
+const commentEmailWorker = require('../workers/comment_email_worker');
+const queue = require('../config/kue');
 
 
 module.exports.create = async function(req, res){
@@ -45,7 +21,17 @@ module.exports.create = async function(req, res){
             previousPost.save();
             
             newComment = await newComment.populate('user', 'name email');
-            commentsMailer.newComment(newComment);
+            // commentsMailer.newComment(newComment);
+
+            let job = queue.create('emails' , newComment).save(function(err){
+                if(err){
+                    console.log('error in creating a queue');
+                }
+
+                console.log('job enqueued' , job.id);
+            });
+
+
             if (req.xhr){
                 
     
