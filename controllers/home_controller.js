@@ -1,30 +1,102 @@
+// const Post = require('../models/post');
+// const User = require('../models/user');
+
+
+
+// module.exports.home = async function(req, res){
+
+//   try {
+//     let posts = await Post.find({})
+//       .sort("-createdAt")
+//       .populate("user")
+//       .populate({
+//         path: "comments",
+//         populate: {
+//           path: "user",
+//         },
+//       })
+//       .populate({
+//         path: "comments",
+//         populate: {
+//           path: "likes",
+//         },
+//       })
+//       .populate("likes");
+
+    
+//         let users = await User.find({});
+
+//         return res.render('home', {
+//             title: "bruhgram | Home",
+//             posts:  posts,
+//             all_users: users
+//         });
+
+//     }catch(err){
+//         console.log('Error', err);
+//         return;
+//     }
+   
+// }
+
+// // module.exports.actionName = function(req, res){}
+
+
+// // using then
+// // Post.find({}).populate('comments').then(function());
+
+// // let posts = Post.find({}).populate('comments').exec();
+
+// // posts.then()
+
 const Post = require('../models/post');
-const user = require('../models/user');
+const User = require('../models/user');
 
-module.exports.home = async function(req, res) {
-  try {
-    const posts = await Post.find({})
-      .sort('-createdAt')
-      .populate('user')
+
+
+module.exports.home = async function(req, res){
+
+    try {
+    let posts = await Post.find({})
+      .sort("-createdAt")
+      .populate("user")
       .populate({
-        path: 'comments',
+        path: "comments",
         populate: {
-          path: 'user'
-        }
+          path: "user",
+        },
       })
-      .exec();
+      .populate({
+        path: "comments",
+        populate: {
+          path: "likes",
+        },
+      })
+      .populate("likes");
 
-    const users = await user.find({}).exec();
+    
+        let users = await User.find({});
 
-    res.render('home', {
-      title: "bruhgram | Home",
-      posts:  posts,
-      all_users: users
-    });
-  } catch(err) {
-    console.log(err);
-    return;
-  }
+        return res.render('home', {
+            title: "bruhgram | Home",
+            posts:  posts,
+            all_users: users
+        });
+
+    }catch(err){
+        console.log('Error', err);
+        return;
+    }
+   
 }
 
+// module.exports.actionName = function(req, res){}
+
+
+// using then
+// Post.find({}).populate('comments').then(function());
+
+// let posts = Post.find({}).populate('comments').exec();
+
+// posts.then()
 
